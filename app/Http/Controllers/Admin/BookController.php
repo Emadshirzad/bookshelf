@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Models\book_user;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -115,7 +116,7 @@ class BookController extends Controller implements HasMiddleware
      */
     public function index()
     {
-        return $this->success(Book::latest()->paginate(20));
+        return $this->success(Book::with('bookUser')->latest()->paginate(20));
     }
 
     /**
@@ -147,7 +148,42 @@ class BookController extends Controller implements HasMiddleware
      *                 description="price",
      *                 default="null",
      *                 example=0,
-     *             )
+     *             ),
+     *             @OA\Property(
+     *                 property="sold_price",
+     *                 type="integer",
+     *                 description="sold price",
+     *                 default="null",
+     *                 example=0,
+     *             ),
+     *             @OA\Property(
+     *                 property="count",
+     *                 type="integer",
+     *                 description="count",
+     *                 default="null",
+     *                 example=0,
+     *             ),
+     *             @OA\Property(
+     *                 property="type",
+     *                 type="string",
+     *                 description="type book",
+     *                 default="null",
+     *                 example="sell",
+     *             ),
+     *             @OA\Property(
+     *                 property="release_date",
+     *                 type="string",
+     *                 description="release date",
+     *                 default="null",
+     *                 example="1403-2-24",
+     *             ),
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="string",
+     *                 description="status book",
+     *                 default="null",
+     *                 example="accept",
+     *             ),
      *         )
      *     ),
      *     @OA\Response(
@@ -166,18 +202,37 @@ class BookController extends Controller implements HasMiddleware
     public function store(Request $request)
     {
         $request->validate([
-            'title'   => 'required',
-            'author'  => 'required',
-            'price'   => 'required|numeric',
-            // 'picture' => 'required|string',
+            'title'       => 'required',
+            'author'      => 'required',
+            'price'       => 'required|numeric',
+            'sold_price'  => 'required|numeric',
+            'type'        => 'required|in:rent,sell,gift,ebook',
+            'count'       => 'required|numeric',
+            'release_date'=> 'required',
+            'status'      => 'in:reject,accept,is_waiting'
         ]);
 
         try {
             $book = Book::create($request->all());
+            book_user::create([
+                'user_id'     => $request->user_id,
+                'book_id'     => $book->id,
+                'price'       => $book->price,
+                'sold_price'  => $request->sold_price,
+                'count'       => $request->count,
+                'type'        => $request->type,
+                'release_date'=> $request->release_date,
+                'status'      => $request->status
+            ]);
             return $this->success($book);
-        } catch (Exception $e) {
+        } catch(Exception $e) {
             Log::error($e->getMessage());
+<<<<<<< Updated upstream
         }   return $this->error(__('messages.book.notCreated'));
+=======
+            return $this->error('Book not created');
+        }
+>>>>>>> Stashed changes
     }
 
     /**
@@ -316,8 +371,43 @@ class BookController extends Controller implements HasMiddleware
      *                 type="integer",
      *                 description="price",
      *                 default="null",
-     *                 example="price Item",
-     *             )
+     *                 example=0,
+     *             ),
+     *             @OA\Property(
+     *                 property="sold_price",
+     *                 type="integer",
+     *                 description="sold price",
+     *                 default="null",
+     *                 example=0,
+     *             ),
+     *             @OA\Property(
+     *                 property="count",
+     *                 type="integer",
+     *                 description="count",
+     *                 default="null",
+     *                 example=0,
+     *             ),
+     *             @OA\Property(
+     *                 property="type",
+     *                 type="string",
+     *                 description="type book",
+     *                 default="null",
+     *                 example="sell",
+     *             ),
+     *             @OA\Property(
+     *                 property="release_date",
+     *                 type="string",
+     *                 description="release date",
+     *                 default="null",
+     *                 example="1403-2-24",
+     *             ),
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="string",
+     *                 description="status book",
+     *                 default="null",
+     *                 example="accept",
+     *             ),
      *         )
      *     ),
      *     @OA\Response(
@@ -336,15 +426,28 @@ class BookController extends Controller implements HasMiddleware
     public function update(Request $request, Int $id)
     {
         $request->validate([
-            'title'   => 'required',
-            'author'  => 'required',
-            'price'   => 'required|numeric',
-            //'picture' => 'required|url',
+            'title'       => 'required',
+            'author'      => 'required',
+            'price'       => 'required|numeric',
+            'sold_price'  => 'numeric',
+            'type'        => 'in:rent,sell,gift,ebook',
+            'count'       => 'numeric',
+            'release_date'=> '',
+            'status'      => 'in:reject,accept,is_waiting'
         ]);
 
         try {
             $book = Book::findOrFail($id);
             $book->update($request->all());
+            $manage = book_user::whereBookId($book->id);
+            $manage->update([
+                'price'       => $book->price,
+                'sold_price'  => $request->sold_price,
+                'count'       => $request->count,
+                'type'        => $request->type,
+                'release_date'=> $request->release_date,
+                'status'      => $request->status
+            ]);
             return response()->json($book);
         } catch (Exception $e) {
             Log::error($e->getMessage());

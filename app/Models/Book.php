@@ -79,8 +79,14 @@ class Book extends Model
         return $this->hasMany(Comment::class);
     }
 
+<<<<<<< Updated upstream
     public function ebook()
     {
         return $this->hasMany(Ebook::class);
+=======
+    public function bookUser()
+    {
+        return $this->hasOne(book_user::class);
+>>>>>>> Stashed changes
     }
 }

@@ -133,4 +133,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Book::class);
     }
+
+    public function bookUser()
+    {
+        return $this->hasOne(book_user::class);
+    }
 }
