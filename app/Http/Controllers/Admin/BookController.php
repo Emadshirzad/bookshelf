@@ -227,12 +227,7 @@ class BookController extends Controller implements HasMiddleware
             return $this->success($book);
         } catch(Exception $e) {
             Log::error($e->getMessage());
-<<<<<<< Updated upstream
         }   return $this->error(__('messages.book.notCreated'));
-=======
-            return $this->error('Book not created');
-        }
->>>>>>> Stashed changes
     }
 
     /**

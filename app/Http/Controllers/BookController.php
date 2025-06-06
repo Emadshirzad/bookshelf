@@ -218,7 +218,7 @@ class BookController extends Controller implements HasMiddleware
             return $this->success($book);
         } catch (Exception $e) {
             Log::error($e->getMessage());
-            return $this->error(__('messages.book.notCreated')); 
+            return $this->error(__('messages.book.notCreated'));
         }
     }
 
@@ -378,11 +378,7 @@ class BookController extends Controller implements HasMiddleware
             return response()->json($book);
         } catch (Exception $e) {
             Log::error($e->getMessage());
-<<<<<<< Updated upstream
             return $this->error(__('messages.book.notUpdated'));
-=======
-            return response()->json(['error' => 'Book not updated'], 400);
->>>>>>> Stashed changes
         }
     }
 
